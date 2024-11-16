@@ -8,36 +8,62 @@ import base64
 import openai
 from dotenv import load_dotenv
 import os
-
+# Search the .env file
 load_dotenv()
 dataset_dir = "../../dataset"
 
 def find_top_k_similar_images_by_text(description, k=3):
-    # model = SentenceTransformer('clip-ViT-B-32')
-    # text_embedding = model.encode(description)
-    # distances = []
+    # pre-train
+    model = SentenceTransformer('clip-ViT-B-32')
+    text_embedding = model.encode(description)
+    # print(len(text_embedding))
+    # print(text_embedding)
+    distances = []
 
-    # model = SentenceTransformer('clip-ViT-B-32')
+    model = SentenceTransformer('clip-ViT-B-32')
 
-    # for image_name in os.listdir(dataset_dir):
-    #     image_path = os.path.join(dataset_dir, image_name)
-    #     image = Image.open(image_path)
-    #     image_embedding = model.encode(image)
-    #     similarity = spatial.distance.euclidean(text_embedding, image_embedding)
-    #     distances.append((image_path, similarity))
+    for image_name in os.listdir(dataset_dir):
+        image_path = os.path.join(dataset_dir, image_name)
+        image = Image.open(image_path)
+        image_embedding = model.encode(image)
 
-    # # Sort by similarity in descending order
-    # distances.sort(key=lambda x: x[1])
+        # print(len(image_embedding))
 
-    # # Get the top k similar images
-    # top_k_images = [name for name, _ in distances[:k]]
-    # return top_k_images
+        similarity = spatial.distance.euclidean(text_embedding, image_embedding)
+
+        # similarity = spatial.distance.cosine(text_embedding, image_embedding)
+
+        distances.append((image_path, similarity))
+
+    # Sort by similarity in descending order
+    distances.sort(key=lambda x: x[1])
+
+    # Get the top k similar images
+    top_k_images = [name for name, _ in distances[:k]]
+    return top_k_images
     print("TODO: implement this function during the hands-on part")
     ...
 
 # TODO: Part 2
 def classify_animal(image_path, labels):
-    ...
+    model = SentenceTransformer('clip-ViT-B-32')
+    image = Image.open(image_path)
+    image_embedding = model.encode(image)
+
+    model = SentenceTransformer('clip-ViT-B-32')
+    distances = []
+
+    for label in labels:
+        single_embedding = model.encode(label)
+        similarity = spatial.distance.euclidean(single_embedding, image_embedding)
+        distances.append((label, similarity))
+
+    distances.sort(key=lambda x: x[1])
+
+    classify_type = [name for name, _ in distances[:1]]
+    return classify_type
+
+
 
 
 def detect_object(image_path, description):
@@ -185,14 +211,14 @@ def edit_image( original_image_path, mask_image_path, description):
 if __name__ == "__main__":
 
     # Part 1: Find top k similar images by text
-    top_k_images = find_top_k_similar_images_by_text("a cat reading a book", k=1)
-    print(top_k_images)
+    # top_k_images = find_top_k_similar_images_by_text("a cat reading a book", k=1)
+    # print(top_k_images)
 
     # Part 2: Classify animal
 
-    # labels = ["cow", "horse", "sheep", "chicken", "goat", "pig"]
-    # animal_label = classify_animal("original_image.png", labels)
-    # print(animal_label)
+    labels = ["cow", "horse", "sheep", "chicken", "goat", "pig"]
+    animal_label = classify_animal("original_image.png", labels)
+    print(animal_label)
 
     # Part 3: Detect object (demo)
     # image_path = "original_image.png"
